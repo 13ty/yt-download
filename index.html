@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>YouTube Video Downloader and Converter</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+        }
+        .container {
+          max-width: 600px;
+          margin: auto;
+        }
+        input[type="text"] {
+          width: calc(100% - 22px);
+          padding: 8px;
+          margin-bottom: 10px;
+        }
+        button {
+          padding: 8px 15px;
+          background-color: #4CAF50;
+          color: white;
+          border: none;
+          cursor: pointer;
+        }
+        button:hover {
+          background-color: #45a049;
+        }
+        .list-group {
+          margin-top: 20px;
+        }
+        .list-group-item {
+          padding: 8px;
+          border-bottom: 1px solid #ddd;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>YouTube Video Downloader and Converter</h1>
+        <input type="text" id="videoUrl" placeholder="Enter YouTube video URL">
+        <button onclick="downloadVideo()">Download</button>
+        <div class="list-group" id="fileList"></div>
+      </div>
+
+      <script>
+        async function downloadVideo() {
+          const url = document.getElementById('videoUrl').value;
+          if (!url) return alert('Please enter a valid YouTube video URL');
+
+          try {
+            const response = await fetch('/api/download', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ url })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+              alert('Download started. Check the list below for progress.');
+            } else {
+              alert('Error downloading video: ' + data.message);
+            }
+          } catch (error) {
+            console.error(error);
+            alert('An error occurred while downloading the video.');
+          }
+        }
+
+        async function fetchFiles() {
+          const response = await fetch('/api/files');
+          const files = await response.json();
+          const fileList = document.getElementById('fileList');
+          fileList.innerHTML = '';
+
+          files.forEach(file => {
+            const li = document.createElement('div');
+            li.className = 'list-group-item';
+            li.textContent = file.name;
+            fileList.appendChild(li);
+          });
+        }
+
+        setInterval(fetchFiles, 5000); // Update file list every 5 seconds
+      </script>
+    </body>
+    </html>
